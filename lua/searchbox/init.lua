@@ -9,7 +9,7 @@ local merge = utils.merge
 local search_defaults = {
   reverse = false,
   exact = false,
-  prompt = ' ',
+  prompt = ' ',
   modifier = 'disabled',
   title = false,
   visual_mode = false,
@@ -20,18 +20,14 @@ local search_defaults = {
 local defaults = {
   defaults = {}, -- search config defaults
   popup = {
-    relative = 'win',
+    relative = 'editor',
     position = {
-      row = '5%',
-      col = '95%',
+      row = '100%',
+      col = '0%',
     },
-    size = 30,
+    size = '100%',
     border = {
-      style = 'rounded',
-      text = {
-        top = ' Search ',
-        top_align = 'left',
-      },
+      style = 'none',
     },
     win_options = {
       winhighlight = 'Normal:Normal,FloatBorder:FloatBorder',

@@ -112,11 +112,6 @@ M.match_all = {
     state.on_done(nil, 'match_all')
   end,
   on_submit = function(value, opts, state)
-    if state.total_matches == 0 then
-      local _, err = pcall(vim.cmd, '//')
-      print_err(err)
-    end
-
     if state.total_matches == '?' then
       value = nil
     end
@@ -125,12 +120,17 @@ M.match_all = {
       clear_matches(state)
     end
 
+    vim.opt.hlsearch = vim.opt.hlsearch
+    vim.v.searchforward = opts.reverse and 0 or 1
+
     -- Make sure you land on the first match.
     -- Y'all can blame netrw for this one.
-    vim.api.nvim_win_set_cursor(
-      state.winid,
-      {state.first_match.line, state.first_match.col - 1}
-    )
+    if state.first_match ~= nil then
+      vim.api.nvim_win_set_cursor(
+        state.winid,
+        {state.first_match.line, state.first_match.col - 1}
+      )
+    end
 
     state.on_done(value, 'match_all')
   end,

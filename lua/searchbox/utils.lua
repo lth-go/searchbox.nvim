@@ -131,8 +131,16 @@ end
 
 M.set_title = function(search_opts, user_opts)
   local ok, title = pcall(function()
+    if user_opts.popup.border.text == nil then
+      return ''
+    end
+
     return user_opts.popup.border.text.top
   end)
+
+  if not ok then
+    return ''
+  end
 
   if title == nil then
     return ''
