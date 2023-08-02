@@ -9,23 +9,8 @@ M.clear_matches = function(bufnr)
   vim.cmd("nohlsearch")
 end
 
-M.feedkeys = function(keys)
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, true, true), "n", true)
-end
-
 M.merge = function(defaults, override)
   return vim.tbl_deep_extend("force", {}, defaults, override or {})
-end
-
-M.create_map = function(input, force)
-  return function(lhs, rhs)
-    if type(rhs) == "string" then
-      vim.api.nvim_buf_set_keymap(input.bufnr, "i", lhs, rhs, { noremap = true })
-      return
-    end
-
-    input:map("i", lhs, rhs, { noremap = true }, force)
-  end
 end
 
 M.get_modifier = function(name)
@@ -82,11 +67,6 @@ M.nearest_match = function(search_term, flags)
   }
 end
 
-M.move_cursor = function(winid, pos)
-  vim.fn.setpos(".", { 0, pos[1], pos[2] })
-  vim.api.nvim_win_set_cursor(winid, pos)
-end
-
 M.highlight_text = function(bufnr, hl_name, pos)
   local h = function(line, col, offset)
     vim.api.nvim_buf_add_highlight(bufnr, M.hl_namespace, hl_name, line - 1, col - 1, offset)
@@ -106,47 +86,6 @@ M.highlight_text = function(bufnr, hl_name, pos)
       h(curr_line, 1, -1)
     end
   end
-end
-
-M.set_title = function(search_opts, user_opts)
-  local ok, title = pcall(function()
-    if user_opts.popup.border.text == nil then
-      return ""
-    end
-
-    return user_opts.popup.border.text.top
-  end)
-
-  if not ok then
-    return ""
-  end
-
-  if title == nil then
-    return ""
-  end
-
-  if search_opts.title then
-    return search_opts.title
-  end
-
-  if title ~= " Search " then
-    return title
-  end
-
-  title = vim.trim(title)
-  if search_opts.reverse then
-    title = "Reverse Search"
-  end
-
-  if search_opts.exact then
-    title = title .. " (exact)"
-  end
-
-  return format(" %s ", title)
-end
-
-M.validate_confirm_mode = function(value)
-  return value == "menu" or value == "native" or value == "off"
 end
 
 return M

@@ -41,11 +41,9 @@ local to_opts = {
   exact = bool,
   visual_mode = bool,
   clear_matches = bool,
-  title = str,
   prompt = str,
   confirm = str,
   modifier = str,
-  show_matches = bool_or_str,
 }
 
 local parse_options = function(args)
