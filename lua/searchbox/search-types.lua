@@ -1,42 +1,41 @@
 local M = {}
 local utils = require("searchbox.utils")
-local noop = function() end
 
 local buf_call = function(state, fn)
   return vim.api.nvim_buf_call(state.bufnr, fn)
 end
 
-local clear_matches = function(state)
-  utils.clear_matches(state.bufnr)
-end
-
-local highlight_text = function(bufnr, pos)
-  utils.highlight_text(bufnr, utils.hl_name, pos)
-end
-
 M.match_all = {
-  buf_leave = noop,
   on_close = function(state)
-    clear_matches(state)
+    vim.api.nvim_win_set_cursor(state.winid, { state.start_cursor[1], state.start_cursor[2] - 1 })
+    vim.cmd("nohlsearch")
   end,
   on_submit = function(value, opts, state)
-    if opts.clear_matches then
-      clear_matches(state)
+    if #value > 0 then
+      local query = utils.build_search(value, opts, state)
+      vim.fn.setreg("/", query)
+      vim.fn.histadd("search", query)
     end
-
-    vim.opt.hlsearch = vim.opt.hlsearch
-    vim.v.searchforward = opts.reverse and 0 or 1
 
     -- Make sure you land on the first match.
     -- Y'all can blame netrw for this one.
     if state.first_match ~= nil then
       vim.api.nvim_win_set_cursor(state.winid, { state.first_match.line, state.first_match.col - 1 })
+    else
+      vim.api.nvim_win_set_cursor(state.winid, { state.start_cursor[1], state.start_cursor[2] - 1 })
+      vim.cmd("nohlsearch")
     end
   end,
   on_change = function(value, opts, state)
-    utils.clear_matches(state.bufnr)
+    local cursor_pos = opts.visual_mode and state.range.start or state.start_cursor
 
     if value == "" then
+      buf_call(state, function()
+        vim.fn.setreg("/", "")
+        vim.opt.hlsearch = vim.opt.hlsearch
+        state.first_match = nil
+        vim.api.nvim_win_set_cursor(state.winid, cursor_pos)
+      end)
       return
     end
 
@@ -72,35 +71,14 @@ M.match_all = {
       return res
     end)
 
-    local cursor_pos = opts.visual_mode and state.range.start or state.start_cursor
-
     if results.total == 0 then
       -- restore cursor position
       buf_call(state, function()
+        state.first_match = nil
         vim.fn.setpos(".", { 0, cursor_pos[1], cursor_pos[2] })
         vim.api.nvim_win_set_cursor(state.winid, cursor_pos)
       end)
       return
-    end
-
-    buf_call(state, function()
-      local start = state.range.start
-      vim.fn.setpos(".", { 0, start[1], start[2] })
-    end)
-
-    -- highlight all the things
-    for i = 1, results.total, 1 do
-      local flags = i == 1 and "c" or ""
-      local pos = buf_call(state, function()
-        return searchpos(flags)
-      end)
-
-      -- check if there is a match
-      if pos.line == 0 and pos.col == 0 then
-        break
-      end
-
-      highlight_text(state.bufnr, pos)
     end
 
     -- move to nearest match
@@ -110,6 +88,7 @@ M.match_all = {
       local nearest = searchpos(flags)
       state.first_match = nearest
       vim.api.nvim_win_set_cursor(state.winid, { nearest.line, nearest.col })
+      vim.opt.hlsearch = vim.opt.hlsearch
     end)
   end,
 }

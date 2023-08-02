@@ -1,14 +1,6 @@
 local M = {}
 local format = string.format
 
-M.hl_name = "SearchBoxMatch"
-M.hl_namespace = vim.api.nvim_create_namespace(M.hl_name)
-
-M.clear_matches = function(bufnr)
-  vim.api.nvim_buf_clear_namespace(bufnr, M.hl_namespace, 0, -1)
-  vim.cmd("nohlsearch")
-end
-
 M.merge = function(defaults, override)
   return vim.tbl_deep_extend("force", {}, defaults, override or {})
 end
@@ -65,27 +57,6 @@ M.nearest_match = function(search_term, flags)
     end_col = off[2],
     one_line = pos[1] == off[1],
   }
-end
-
-M.highlight_text = function(bufnr, hl_name, pos)
-  local h = function(line, col, offset)
-    vim.api.nvim_buf_add_highlight(bufnr, M.hl_namespace, hl_name, line - 1, col - 1, offset)
-  end
-
-  if pos.one_line then
-    h(pos.line, pos.col, pos.end_col)
-  else
-    -- highlight first line
-    h(pos.line, pos.col, -1)
-
-    -- highlight last line
-    h(pos.end_line, 1, pos.end_col)
-
-    -- do the rest
-    for curr_line = pos.line + 1, pos.end_line - 1, 1 do
-      h(curr_line, 1, -1)
-    end
-  end
 end
 
 return M
