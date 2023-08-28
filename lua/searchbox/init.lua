@@ -10,7 +10,7 @@ local search_defaults = {
   reverse = false,
   exact = false,
   prompt = " ",
-  modifier = "disabled",
+  modifier = "plain",
   visual_mode = false,
   range = { -1, -1 },
 }
