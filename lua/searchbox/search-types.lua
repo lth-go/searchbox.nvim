@@ -49,14 +49,9 @@ M.match_all = {
         return { line = 0, col = 0 }
       end
 
-      local offset = vim.fn.searchpos(query, "cne", stopline)
-
       return {
         line = pos[1],
         col = pos[2],
-        end_line = offset[1],
-        end_col = offset[2],
-        one_line = offset[1] == pos[1],
       }
     end
 
@@ -75,7 +70,6 @@ M.match_all = {
       -- restore cursor position
       buf_call(state, function()
         state.first_match = nil
-        vim.fn.setpos(".", { 0, cursor_pos[1], cursor_pos[2] })
         vim.api.nvim_win_set_cursor(state.winid, cursor_pos)
       end)
       return
@@ -83,8 +77,7 @@ M.match_all = {
 
     -- move to nearest match
     buf_call(state, function()
-      vim.fn.setpos(".", { 0, cursor_pos[1], cursor_pos[2] })
-      local flags = opts.reverse and "cb" or "c"
+      local flags = opts.reverse and "bcn" or "cn"
       local nearest = searchpos(flags)
       state.first_match = nearest
       vim.api.nvim_win_set_cursor(state.winid, { nearest.line, nearest.col })

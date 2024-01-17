@@ -46,17 +46,4 @@ M.build_search = function(value, opts, state)
   return query
 end
 
-M.nearest_match = function(search_term, flags)
-  local pos = vim.fn.searchpos(search_term, flags)
-  local off = vim.fn.searchpos(search_term, "cne")
-
-  return {
-    line = pos[1],
-    col = pos[2],
-    end_line = off[1],
-    end_col = off[2],
-    one_line = pos[1] == off[1],
-  }
-end
-
 return M
