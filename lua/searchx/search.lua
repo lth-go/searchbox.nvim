@@ -1,5 +1,7 @@
 local M = {}
-local utils = require("searchbox.utils")
+
+local vim = vim
+local utils = require("searchx.utils")
 
 local buf_call = function(state, fn)
   return vim.api.nvim_buf_call(state.bufnr, fn)
@@ -69,6 +71,8 @@ M.match_all = {
     if results.total == 0 then
       -- restore cursor position
       buf_call(state, function()
+        vim.fn.setpos(".", { 0, cursor_pos[1], cursor_pos[2] })
+
         state.first_match = nil
         vim.api.nvim_win_set_cursor(state.winid, cursor_pos)
       end)
@@ -77,6 +81,8 @@ M.match_all = {
 
     -- move to nearest match
     buf_call(state, function()
+      vim.fn.setpos(".", { 0, cursor_pos[1], cursor_pos[2] })
+
       local flags = opts.reverse and "bcn" or "cn"
       local nearest = searchpos(flags)
       state.first_match = nearest

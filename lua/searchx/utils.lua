@@ -1,9 +1,6 @@
 local M = {}
-local format = string.format
 
-M.merge = function(defaults, override)
-  return vim.tbl_deep_extend("force", {}, defaults, override or {})
-end
+local format = string.format
 
 M.get_modifier = function(name)
   local mods = {

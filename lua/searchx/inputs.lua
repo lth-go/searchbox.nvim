@@ -1,10 +1,11 @@
 local M = {}
 
-local Input = require("nui.input")
-local event = require("nui.utils.autocmd").event
-local utils = require("searchbox.utils")
+local vim = vim
+local nui_input = require("nui.input")
+local nui_event = require("nui.utils.autocmd").event
+local utils = require("searchx.utils")
 
-M.search = function(config, search_opts, handlers)
+M.search = function(search_opts, handler)
   local cursor = vim.fn.getcurpos()
 
   local state = {
@@ -39,49 +40,52 @@ M.search = function(config, search_opts, handlers)
   state.search_modifier = utils.get_modifier(search_opts.modifier)
 
   if state.search_modifier == nil then
-    local msg = "[SearchBox] - Invalid value for 'modifier' argument"
+    local msg = "[Searchx] - Invalid value for 'modifier' argument"
     vim.notify(msg, vim.log.levels.WARN)
     return
   end
 
   if search_opts.visual_mode and state.range.start[1] == 0 then
-    local msg = "[Searchbox] Could not find any text selected."
+    local msg = "[Searchx] Could not find any text selected."
     vim.notify(msg, vim.log.levels.ERROR)
     return
   end
 
-  local input = Input(config.popup, {
+  local input = nui_input(search_opts.popup, {
     prompt = search_opts.prompt,
     default_value = "",
     on_close = function()
-      handlers.on_close(state)
+      handler.on_close(state)
     end,
     on_submit = function(value)
-      handlers.on_submit(value, search_opts, state)
+      handler.on_submit(value, search_opts, state)
     end,
     on_change = function(value)
-      handlers.on_change(value, search_opts, state)
+      handler.on_change(value, search_opts, state)
     end,
   })
 
   input:mount()
 
   input._prompt = search_opts.prompt
-  M.default_mappings(input, search_opts, state)
+  M.default_mappings(input)
 
-  input:on(event.BufLeave, function()
+  input:on(nui_event.BufLeave, function()
     input:unmount()
   end)
 end
 
-M.default_mappings = function(input, search_opts, state)
+M.default_mappings = function(input)
   local bind = function(modes, lhs, rhs, noremap)
     vim.keymap.set(modes, lhs, rhs, { noremap = noremap, buffer = input.bufnr })
   end
 
-  bind({ "", "i" }, "<Plug>(searchbox-close)", input.input_props.on_close, true)
-  bind({ "i" }, "<C-c>", "<Plug>(searchbox-close)", false)
-  bind({ "i" }, "<Esc>", "<Plug>(searchbox-close)", false)
+  bind({ "", "i" }, "<Plug>(searchx-close)", input.input_props.on_close, true)
+  bind({ "i" }, "<C-c>", "<Plug>(searchx-close)", false)
+  bind({ "i" }, "<Esc>", "<Plug>(searchx-close)", false)
+  bind({ "i" }, "<C-p>", "<Nop>", false)
+  bind({ "i" }, "<C-n>", "<Nop>", false)
+  bind({ "i" }, "<C-j>", "<Nop>", false)
 end
 
 return M
