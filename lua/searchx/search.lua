@@ -3,8 +3,8 @@ local M = {}
 local vim = vim
 local utils = require("searchx.utils")
 
-local buf_call = function(state, fn)
-  return vim.api.nvim_buf_call(state.bufnr, fn)
+local win_call = function(state, fn)
+  return vim.api.nvim_win_call(state.winid, fn)
 end
 
 M.match_all = {
@@ -32,7 +32,7 @@ M.match_all = {
     local cursor_pos = opts.visual_mode and state.range.start or state.start_cursor
 
     if value == "" then
-      buf_call(state, function()
+      win_call(state, function()
         vim.fn.setreg("/", "")
         vim.opt.hlsearch = vim.opt.hlsearch
         state.first_match = nil
@@ -59,7 +59,7 @@ M.match_all = {
 
     vim.fn.setreg("/", query)
 
-    local results = buf_call(state, function()
+    local results = win_call(state, function()
       local ok, res = pcall(vim.fn.searchcount, { maxcount = -1 })
       if not ok then
         return { total = 0, current = 0 }
@@ -70,7 +70,7 @@ M.match_all = {
 
     if results.total == 0 then
       -- restore cursor position
-      buf_call(state, function()
+      win_call(state, function()
         vim.fn.setpos(".", { 0, cursor_pos[1], cursor_pos[2] })
 
         state.first_match = nil
@@ -80,7 +80,7 @@ M.match_all = {
     end
 
     -- move to nearest match
-    buf_call(state, function()
+    win_call(state, function()
       vim.fn.setpos(".", { 0, cursor_pos[1], cursor_pos[2] })
 
       local flags = opts.reverse and "bcn" or "cn"
