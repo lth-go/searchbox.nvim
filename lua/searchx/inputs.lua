@@ -16,6 +16,7 @@ M.search = function(search_opts, handler)
     use_range = false,
     start_cursor = { cursor[2], cursor[3] },
     range = { start = { 0, 0 }, ends = { 0, 0 } },
+    reg = vim.fn.getreginfo("/"),
   }
 
   if search_opts.visual_mode then

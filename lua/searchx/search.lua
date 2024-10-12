@@ -9,6 +9,7 @@ end
 
 M.match_all = {
   on_close = function(state)
+    vim.fn.setreg("/", state.reg)
     vim.api.nvim_win_set_cursor(state.winid, { state.start_cursor[1], state.start_cursor[2] - 1 })
     vim.cmd("nohlsearch")
   end,
