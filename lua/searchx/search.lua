@@ -23,6 +23,9 @@ M.match_all = {
     -- Make sure you land on the first match.
     -- Y'all can blame netrw for this one.
     if state.first_match ~= nil then
+      vim.api.nvim_win_set_cursor(state.winid, { state.start_cursor[1], state.start_cursor[2] - 1 })
+      vim.cmd("normal! m'")
+
       vim.api.nvim_win_set_cursor(state.winid, { state.first_match.line, state.first_match.col - 1 })
     else
       vim.api.nvim_win_set_cursor(state.winid, { state.start_cursor[1], state.start_cursor[2] - 1 })
