@@ -1,46 +1,29 @@
 local M = {}
 
-local format = string.format
-
-M.get_modifier = function(name)
-  local mods = {
-    ["disabled"] = "",
-    ["ignore-case"] = "\\c",
-    ["case-sensitive"] = "\\C",
-    ["no-magic"] = "\\M",
-    ["magic"] = "\\m",
-    ["very-magic"] = "\\v",
-    ["very-no-magic"] = "\\V",
-    ["plain"] = "\\V",
-  }
-
-  local modifier = mods[name]
-
-  if modifier then
-    return modifier
-  end
-
-  if type(name) == "string" and name:sub(1, 1) == ":" then
-    return name:sub(2)
-  end
+M.win_call = function(winid, fn)
+  return vim.api.nvim_win_call(winid, fn)
 end
 
-M.build_search = function(value, opts, state)
-  local query = value
+M.build_search = function(value)
+  return string.format("%s%s", "\\V", value)
+end
 
-  if opts.exact then
-    query = format("\\<%s\\>", query)
+M.search_count = function()
+  local ok, res = pcall(vim.fn.searchcount, { maxcount = -1 })
+  if not ok then
+    return { total = 0, current = 0 }
   end
 
-  if opts.visual_mode then
-    query = format("\\%%V%s", query)
-  elseif state.use_range then
-    query = format("\\%%>%sl\\%%<%sl%s", state.range.start[1] - 1, state.range.ends[1] + 1, value)
+  return res
+end
+
+M.search_pos = function(query)
+  local ok, pos = pcall(vim.fn.searchpos, query, "cn")
+  if not ok then
+    return nil
   end
 
-  query = format("%s%s", state.search_modifier, query)
-
-  return query
+  return { pos[1], pos[2] - 1 }
 end
 
 return M
