@@ -5,7 +5,8 @@ M.win_call = function(winid, fn)
 end
 
 M.build_search = function(value)
-  return string.format("%s%s", "\\V", value)
+  value = value:gsub([[\]], [[\\]])
+  return string.format("%s%s", [[\V]], value)
 end
 
 M.search_count = function()
